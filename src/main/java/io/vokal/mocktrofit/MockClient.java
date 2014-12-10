@@ -59,7 +59,7 @@ public class MockClient implements Client {
     protected String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
 
-        String[] parts = path.split("?");
+        String[] parts = path.split("\\?");
         path = parts[0];
 
         String url = String.format("%s|%s", request.getMethod(), path.replace("[/:]", "-"));
@@ -74,7 +74,7 @@ public class MockClient implements Client {
     protected String findFile(String filename) throws IOException {
         String[] list = mContext.getAssets().list(mMockDir);
         for (String path : list) {
-            String regex = String.format("%s\\..+");
+            String regex = String.format("%s\\..+", filename);
             if (path.matches(regex)) {
                 return path;
             }
