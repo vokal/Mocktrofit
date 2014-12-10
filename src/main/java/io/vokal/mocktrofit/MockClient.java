@@ -123,7 +123,6 @@ public class MockClient implements Client {
             }
         }
 
-        // TODO: Parse response info
         return new Response(filename, code, reason, headers, 
             new TypedByteArray(contentType, buffer.toString().getBytes()));
     }
