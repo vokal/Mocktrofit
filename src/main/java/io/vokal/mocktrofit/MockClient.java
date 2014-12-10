@@ -28,6 +28,8 @@ public class MockClient implements Client {
 
     public MockClient(Context aContext, String aDirectory) {
         mContext = aContext.getApplicationContext();
+        if (mContext == null) mContext = aContext;
+
         mMockDir = aDirectory;
     }
 
