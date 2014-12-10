@@ -42,6 +42,6 @@ public class TestMockClient extends AndroidTestCase {
     }
 
     public void testQueryParams() {
-        assertEquals("dogfish", mService.getFavorites("worked", "true").favorite);
+        assertEquals("nickdawg", mService.getFavorites("worked", "true").favorite);
     }
 }
