@@ -33,7 +33,7 @@ public class MockClient implements Client {
         mMockDir = aDirectory;
     }
 
-    protected String alphabetizeAndEncode(String params) {
+    static String alphabetizeAndEncode(String params) {
         TreeMap<String, String> treemap = new TreeMap<String, String>(CASE_INSENSITIVE_ORDER);
         String[] pairs = params.split("&");
         for (String pair : pairs) {
@@ -44,8 +44,8 @@ public class MockClient implements Client {
         StringBuilder output = new StringBuilder();
         for (String key : treemap.keySet()) {
             output.append(key).append("=").append(treemap.get(key));
-            if (key.equals(treemap.lastKey())) {
-                output.append("?");
+            if (!key.equals(treemap.lastKey())) {
+                output.append("&");
             }
         }
 
@@ -56,13 +56,13 @@ public class MockClient implements Client {
         }
     }
 
-    protected String getFileName(Request request) {
+    private String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
 
         String[] parts = path.split("\\?");
         path = parts[0];
 
-        String url = String.format("%s|%s", request.getMethod(), path.replace("[/:]", "-"));
+        String url = String.format("%s|%s", request.getMethod(), path.replaceAll("[/:]", "-"));
 
         if (parts.length > 1) {
             url = String.format("%s|%s", url, alphabetizeAndEncode(parts[1]));
@@ -71,10 +71,10 @@ public class MockClient implements Client {
         return url;
     }
 
-    protected String findFile(String filename) throws IOException {
+    private String findFile(String filename) throws IOException {
         String[] list = mContext.getAssets().list(mMockDir);
+        String regex = String.format("%s\\.\\w+", filename).replaceAll("\\|", "\\\\|");
         for (String path : list) {
-            String regex = String.format("%s\\..+", filename);
             if (path.matches(regex)) {
                 return path;
             }
@@ -83,8 +83,9 @@ public class MockClient implements Client {
         return null;
     }
 
-    protected Response serve(String filename) throws IOException {
-        InputStream is = mContext.getAssets().open(filename);
+    private Response serve(String filename) throws IOException {
+        System.out.println(filename);
+        InputStream is = mContext.getAssets().open(mMockDir + "/" + filename);
         ArrayList<Header> headers = new ArrayList<Header>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -96,9 +97,10 @@ public class MockClient implements Client {
         while(!line.trim().isEmpty()) {
             String[] header = line.split(":", 2);
             headers.add(new Header(header[0], header[1].trim()));
-            if (header[0].toLowerCase(Locale.US).equals("content-type")) {
+            if (header[0].toLowerCase(Locale.getDefault()).equals("content-type")) {
                 contentType = header[1].trim();
             }
+            line=reader.readLine();
         }
 
         // Read the rest of the file
@@ -109,13 +111,16 @@ public class MockClient implements Client {
             buffer.append(arr, 0, numCharsRead);
         }
 
-        String[] parts = def.split("\\w", 3);
+        String[] parts = def.split("\\s+", 3);
         int code = 500;
         String reason = "Internal Mocking Error";
 
         if (parts.length == 3) {
-            code = Integer.getInteger(parts[1], 500);
-            reason = parts[3];
+            try {
+                code = Integer.parseInt(parts[1]);
+                reason = parts[2];
+            } catch (NumberFormatException e) {
+            }
         }
 
         // TODO: Parse response info

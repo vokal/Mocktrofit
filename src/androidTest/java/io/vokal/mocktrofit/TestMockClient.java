@@ -16,6 +16,9 @@ public class TestMockClient extends AndroidTestCase {
     public interface DogService {
         @GET("/v1/test/json")
         Dog getFavorites();
+
+        @GET("/v1/test/params")
+        Dog getFavorites(@Query("something") String thing, @Query("test") String test);
     }
 
     private DogService mService;
@@ -29,7 +32,16 @@ public class TestMockClient extends AndroidTestCase {
         mService = restAdapter.create(DogService.class);       
     }
 
+    public void testAlphabetizeAndEncode() {
+        assertEquals("something%3Dworked%26test%3Dtrue", 
+            MockClient.alphabetizeAndEncode("test=true&something=worked"));
+    }
+
     public void testProperJSONParse() {
         assertEquals("dogfish", mService.getFavorites().favorite);
+    }
+
+    public void testQueryParams() {
+        assertEquals("dogfish", mService.getFavorites("worked", "true").favorite);
     }
 }
