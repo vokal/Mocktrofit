@@ -1,0 +1,6 @@
+image: docker.vokalinteractive.com/android
+env:
+    - ORG_GRADLE_PROJECT_ratsUser=$$rats_user
+    - ORG_GRADLE_PROJECT_ratsPass=$$rats_pass
+script:
+    - ./gradlew build dev
