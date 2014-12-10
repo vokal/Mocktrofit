@@ -33,7 +33,7 @@ public class MockClient implements Client {
         mMockDir = aDirectory;
     }
 
-    private String alphabetizeAndEncode(String params) {
+    protected String alphabetizeAndEncode(String params) {
         TreeMap<String, String> treemap = new TreeMap<String, String>(CASE_INSENSITIVE_ORDER);
         String[] pairs = params.split("&");
         for (String pair : pairs) {
@@ -56,7 +56,7 @@ public class MockClient implements Client {
         }
     }
 
-    private String getFileName(Request request) {
+    protected String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
 
         String[] parts = path.split("?");
@@ -71,7 +71,7 @@ public class MockClient implements Client {
         return url;
     }
 
-    private String findFile(String filename) throws IOException {
+    protected String findFile(String filename) throws IOException {
         String[] list = mContext.getAssets().list(mMockDir);
         for (String path : list) {
             String regex = String.format("%s\\..+");
@@ -83,7 +83,7 @@ public class MockClient implements Client {
         return null;
     }
 
-    private Response serve(String filename) throws IOException {
+    protected Response serve(String filename) throws IOException {
         InputStream is = mContext.getAssets().open(filename);
         ArrayList<Header> headers = new ArrayList<Header>();
 
@@ -132,6 +132,7 @@ public class MockClient implements Client {
             fullPath = mRouteMap.get(filename);
         } else {
             fullPath = findFile(filename);
+            if (fullPath != null) mRouteMap.put(filename, fullPath);
         }
 
         Response output = new Response("", 404, "Not Found", Collections.EMPTY_LIST, null);       
