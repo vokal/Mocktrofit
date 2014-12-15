@@ -8,8 +8,17 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.jfrog.artifactory' version '3.0.1' 
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'rats'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+group = 'io.vokal'
+version = '0.1.0'
 
 repositories {
     jcenter()
@@ -19,6 +28,7 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.2'
     compile 'com.squareup.retrofit:retrofit:1.8.0'
 }
+
 
 android {
     compileSdkVersion 21
@@ -52,4 +62,37 @@ rats {
     password ratsPass
     count 3
     message "git log --oneline HEAD^..HEAD".execute().text
+}
+
+artifacts {
+    archives file("build/outputs/aar/Mocktrofit-release.aar")
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'libs-release-local'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+        defaults {
+            //This closure defines defaults for all 'artifactoryPublish' tasks of all projects the plugin is applied to
+            publications("mavenAndroid")
+            publishBuildInfo = true   //Publish build-info to Artifactory (true by default)
+            publishArtifacts = true   //Publish artifacts to Artifactory (true by default)
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenAndroid(MavenPublication) {
+            groupId group
+            artifactId 'mocktrofit'
+            version version
+            artifact "build/outputs/aar/Mocktrofit-release.aar"
+        }
+    }
 }
