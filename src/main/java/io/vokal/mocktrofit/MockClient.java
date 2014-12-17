@@ -58,14 +58,28 @@ public class MockClient implements Client {
 
     private String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
-
         String[] parts = path.split("\\?");
         path = parts[0];
-
         String url = String.format("%s|%s", request.getMethod(), path.replaceAll("[/:]", "-"));
+        String body = null;
+        if ("GET".equals(request.getMethod())) {
+            if (parts.length > 1) {
+                url = url + "?" + alphabetizeAndEncode(parts[1]);
+            }
+        } else {
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream((int) request.getBody().length());
+                request.getBody().writeTo(out);
+                body = new String(out.toByteArray(), "UTF-8");
+                body = body.replaceAll("[/:]", "-");
+                body = URLEncoder.encode(body, "UTF-8");
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-        if (parts.length > 1) {
-            url = String.format("%s|%s", url, alphabetizeAndEncode(parts[1]));
+        if (body != null) {
+            url = String.format("%s|%s", url, body);
         }
 
         return url;
