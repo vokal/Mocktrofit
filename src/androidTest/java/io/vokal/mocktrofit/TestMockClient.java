@@ -34,7 +34,7 @@ public class TestMockClient extends AndroidTestCase {
 
     public void testAlphabetizeAndEncode() {
         assertEquals("something%3Dworked%26test%3Dtrue", 
-            MockClient.alphabetizeAndEncode("test=true&something=worked"));
+            MockClient.encode(MockClient.alphabetize("test=true&something=worked")));
     }
 
     public void testProperJSONParse() {

@@ -2,10 +2,15 @@ package io.vokal.mocktrofit;
 
 import android.content.Context;
 import android.support.v4.util.SimpleArrayMap;
+import android.util.Log;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.math.BigInteger;
 import java.util.*;
+import java.security.*;
+
+import com.google.gson.*;
 
 import retrofit.client.*;
 import retrofit.mime.TypedByteArray;
@@ -33,7 +38,7 @@ public class MockClient implements Client {
         mMockDir = aDirectory;
     }
 
-    static String alphabetizeAndEncode(String params) {
+    static String alphabetize(String params) {
         TreeMap<String, String> treemap = new TreeMap<String, String>(CASE_INSENSITIVE_ORDER);
         String[] pairs = params.split("&");
         for (String pair : pairs) {
@@ -49,29 +54,47 @@ public class MockClient implements Client {
             }
         }
 
+        return output.toString();
+    }
+
+    static String encode(String value) {
         try {
-            return URLEncoder.encode(output.toString(), "UTF-8");
+            return URLEncoder.encode(value, "UTF-8");
         } catch(UnsupportedEncodingException e) {
-            return output.toString();
+            return value;
         }
+    }
+
+
+    static String encrypt(String name) {
+        String sha1 = name;
+        try {
+            MessageDigest crypt = MessageDigest.getInstance("SHA-1");
+            crypt.reset();
+            crypt.update(name.getBytes("UTF-8"));
+            sha1 = new BigInteger(1, crypt.digest()).toString(16);
+        } catch(NoSuchAlgorithmException|UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return sha1;
     }
 
     private String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
         String[] parts = path.split("\\?");
-        path = parts[0];
-        String url = String.format("%s|%s", request.getMethod(), path.replaceAll("[/:]", "-"));
+        path = parts[0].replaceAll("[:/]", "-");
+        if (parts.length > 1) {
+            path = path + "?" + encode(alphabetize(parts[1]));
+        }
+
+        String url = String.format("%s|%s", request.getMethod(), path);
         String body = null;
-        if ("GET".equals(request.getMethod())) {
-            if (parts.length > 1) {
-                url = url + "?" + alphabetizeAndEncode(parts[1]);
-            }
-        } else {
+
+        if (request.getBody() != null && request.getBody().length() > 0) { 
             try {
                 ByteArrayOutputStream out = new ByteArrayOutputStream((int) request.getBody().length());
                 request.getBody().writeTo(out);
                 body = new String(out.toByteArray(), "UTF-8");
-                body = body.replaceAll("[/:]", "-");
                 body = URLEncoder.encode(body, "UTF-8");
             } catch(IOException e) {
                 e.printStackTrace();
@@ -98,7 +121,6 @@ public class MockClient implements Client {
     }
 
     private Response serve(String filename) throws IOException {
-        System.out.println(filename);
         InputStream is = mContext.getAssets().open(mMockDir + "/" + filename);
         ArrayList<Header> headers = new ArrayList<Header>();
 
@@ -145,17 +167,22 @@ public class MockClient implements Client {
     public Response execute(Request request) throws IOException {
 
         String filename = getFileName(request);
+        String key = encrypt(filename);
         String fullPath;
-        if (mRouteMap.containsKey(filename)) {
-            fullPath = mRouteMap.get(filename);
+        if (mRouteMap.containsKey(key)) {
+            fullPath = mRouteMap.get(key);
         } else {
-            fullPath = findFile(filename);
-            if (fullPath != null) mRouteMap.put(filename, fullPath);
+            fullPath = findFile(key);
+            if (fullPath != null) mRouteMap.put(key, fullPath);
         }
 
-        Response output = new Response("", 404, "Not Found", Collections.EMPTY_LIST, null);       
+        Response output = new Response(filename, 404, "Not Found", Collections.EMPTY_LIST, null);       
         if (fullPath != null) {
             output = serve(fullPath);
+        } else {
+            Log.d("Mocktrofit", "Missing File: " + filename);
+            Log.d("Mocktrofit", "    Key: " + key);
+            Log.d("Mocktrofit", "    Are you sure you set up the mocktrofit gradle plugin?");
         }
         return output;
     }

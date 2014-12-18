@@ -1,10 +1,18 @@
 buildscript {
     repositories { 
         jcenter()
+        maven {
+            url 'http://vokal-repo.ngrok.com/artifactory/repo'
+            credentials {
+                username = "${artifactory_user}"
+                password = "${artifactory_password}"
+            }
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
         classpath 'com.wmbest.gradle:rats:0.2.1'
+        classpath 'io.vokal.gradle:mocktrofit-processor:0.1.0'
     }
 }
 
@@ -16,9 +24,10 @@ apply plugin: 'com.android.library'
 apply plugin: 'rats'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
+apply plugin: 'io.vokal.mocktrofit'
 
 group = 'io.vokal'
-version = '0.1.0'
+version = '0.1.1'
 
 repositories {
     jcenter()
