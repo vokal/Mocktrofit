@@ -24,7 +24,7 @@ Include Mocktrofit
 compile 'io.vokal:mocktrofit:0.2.1'
 ```
 
-User the Client
+Use the Client
 
 ```java
   RestAdapter restAdapter = new RestAdapter.Builder()
