@@ -12,6 +12,8 @@ import java.security.*;
 
 import com.google.gson.*;
 
+import org.ardverk.coding.BencodingOutputStream;
+
 import retrofit.client.*;
 import retrofit.mime.TypedByteArray;
 
@@ -38,7 +40,7 @@ public class MockClient implements Client {
         mMockDir = aDirectory;
     }
 
-    static String alphabetize(String params) {
+    static String alphabetizeEncodeQuery(String params) {
         TreeMap<String, String> treemap = new TreeMap<String, String>(CASE_INSENSITIVE_ORDER);
         String[] pairs = params.split("&");
         for (String pair : pairs) {
@@ -48,7 +50,7 @@ public class MockClient implements Client {
 
         StringBuilder output = new StringBuilder();
         for (String key : treemap.keySet()) {
-            output.append(key).append("=").append(treemap.get(key));
+            output.append(encode(key)).append("=").append(encode(treemap.get(key)));
             if (!key.equals(treemap.lastKey())) {
                 output.append("&");
             }
@@ -84,7 +86,7 @@ public class MockClient implements Client {
         String[] parts = path.split("\\?");
         path = parts[0].replaceAll("[:/]", "-");
         if (parts.length > 1) {
-            path = path + "?" + encode(alphabetize(parts[1]));
+            path = path + "?" + alphabetizeEncodeQuery(parts[1]);
         }
 
         String url = String.format("%s|%s", request.getMethod(), path);
@@ -95,7 +97,16 @@ public class MockClient implements Client {
                 ByteArrayOutputStream out = new ByteArrayOutputStream((int) request.getBody().length());
                 request.getBody().writeTo(out);
                 body = new String(out.toByteArray(), "UTF-8");
-                body = URLEncoder.encode(body, "UTF-8");
+
+                Gson gson = new GsonBuilder().create();
+                TreeMap map = gson.fromJson(body, TreeMap.class);
+
+                out = new ByteArrayOutputStream();
+                BencodingOutputStream ben = new BencodingOutputStream(out);
+                ben.writeObject(map);
+
+                body = new String(out.toByteArray(), "UTF-8");
+                body = body.replaceAll("[:/]", "-");
             } catch(IOException e) {
                 e.printStackTrace();
             }

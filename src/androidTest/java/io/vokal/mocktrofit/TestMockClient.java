@@ -13,6 +13,21 @@ public class TestMockClient extends AndroidTestCase {
         public String favorite;
     }
 
+    public static class User {
+        public int id;
+        public String email;
+        public String auth_token;
+        public String phone_number;
+        public String joined;
+        public String role;
+        public String display_name;
+    }
+
+    public static class UserCreds {
+        public String email;
+        public String password;
+    }
+
     public interface DogService {
         @GET("/v1/test/json")
         Dog getFavorites();
@@ -21,7 +36,13 @@ public class TestMockClient extends AndroidTestCase {
         Dog getFavorites(@Query("something") String thing, @Query("test") String test);
     }
 
-    private DogService mService;
+    public interface UserService {
+        @POST("/v1/user/login")
+        User login(@Body UserCreds creds);
+    }
+
+    private DogService mDogService;
+    private UserService mUserService;
 
     protected void setUp() throws Exception {
         RestAdapter restAdapter = new RestAdapter.Builder()
@@ -29,19 +50,29 @@ public class TestMockClient extends AndroidTestCase {
             .setClient(new MockClient(getContext(), "mocks"))
             .build();
 
-        mService = restAdapter.create(DogService.class);       
+        mDogService = restAdapter.create(DogService.class);       
+        mUserService = restAdapter.create(UserService.class);       
     }
 
     public void testAlphabetizeAndEncode() {
-        assertEquals("something%3Dworked%26test%3Dtrue", 
-            MockClient.encode(MockClient.alphabetize("test=true&something=worked")));
+        assertEquals("something=worked&test=true", 
+            MockClient.alphabetizeEncodeQuery("test=true&something=worked"));
     }
 
     public void testProperJSONParse() {
-        assertEquals("dogfish", mService.getFavorites().favorite);
+        assertEquals("dogfish", mDogService.getFavorites().favorite);
     }
 
     public void testQueryParams() {
-        assertEquals("nickdawg", mService.getFavorites("worked", "true").favorite);
+        assertEquals("nickdawg", mDogService.getFavorites("worked", "true").favorite);
+    }
+
+    public void testPostWithBody() {
+        UserCreds creds = new UserCreds();
+        creds.email = "joe.customer@example.com";
+        creds.password = "P4rkMe";
+        User myuser = mUserService.login(creds);
+        assertEquals(30, myuser.id);
+
     }
 }

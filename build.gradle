@@ -27,7 +27,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'io.vokal.mocktrofit'
 
 group = 'io.vokal'
-version = '0.1.1'
+version = '0.2.1'
 
 repositories {
     jcenter()
