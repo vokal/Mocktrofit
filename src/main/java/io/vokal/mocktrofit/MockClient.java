@@ -106,6 +106,7 @@ public class MockClient implements Client {
                 ben.writeObject(map);
 
                 body = new String(out.toByteArray(), "UTF-8");
+                body = body.replaceAll("[:/]", "-");
             } catch(IOException e) {
                 e.printStackTrace();
             }
