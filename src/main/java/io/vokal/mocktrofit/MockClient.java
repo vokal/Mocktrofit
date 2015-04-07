@@ -40,13 +40,20 @@ public class MockClient implements Client {
         mMockDir = aDirectory;
     }
 
-    static String alphabetizeEncodeQuery(String params) {
+    static TreeMap<String, String> alphabetizeQuery(String params) {
         TreeMap<String, String> treemap = new TreeMap<String, String>(CASE_INSENSITIVE_ORDER);
         String[] pairs = params.split("&");
         for (String pair : pairs) {
             String[] vals = pair.split("=");
             treemap.put(vals[0], vals[1]);
         }
+
+        return treemap;
+    }
+
+
+    static String alphabetizeEncodeQuery(String params) {
+        TreeMap<String, String> treemap = alphabetizeQuery(params);
 
         StringBuilder output = new StringBuilder();
         for (String key : treemap.keySet()) {
@@ -81,6 +88,22 @@ public class MockClient implements Client {
         return sha1;
     }
 
+    static TreeMap convertBody(String contentType, String body) {
+
+        TreeMap<String, String> result = null;
+        String[] ctypeParts = contentType.split(";\\ ");
+        switch (ctypeParts[0].toLowerCase()) {
+            case "application/json":
+                Gson gson = new GsonBuilder().create();
+                result = gson.fromJson(body, TreeMap.class);
+                break;
+            case "application/x-www-form-urlencoded":
+                result = alphabetizeQuery(body);
+                break;
+        }
+        return result;
+    }
+
     private String getFileName(Request request) {
         String path = request.getUrl().replaceFirst(BASE_RGX, "");
         String[] parts = path.split("\\?");
@@ -98,8 +121,9 @@ public class MockClient implements Client {
                 request.getBody().writeTo(out);
                 body = new String(out.toByteArray(), "UTF-8");
 
-                Gson gson = new GsonBuilder().create();
-                TreeMap map = gson.fromJson(body, TreeMap.class);
+                String contentType = request.getBody().mimeType();
+
+                TreeMap map = convertBody(contentType, body);
 
                 out = new ByteArrayOutputStream();
                 BencodingOutputStream ben = new BencodingOutputStream(out);
@@ -107,7 +131,7 @@ public class MockClient implements Client {
 
                 body = new String(out.toByteArray(), "UTF-8");
                 body = body.replaceAll("[:/]", "-");
-            } catch(IOException e) {
+            } catch(NullPointerException|IOException e) {
                 e.printStackTrace();
             }
         }
