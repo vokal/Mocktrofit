@@ -35,7 +35,7 @@ Use the Client
 
 Notes
 ----
-If you are unsure what to name your mocks, check the logs.  It will include both the expected name and the hash incase the filename is too long for your file system.
+If you are unsure what to name your mocks, check the logs.  It will include both the expected name and the hash in case the filename is too long for your file system.
 
 
 Limitations
@@ -43,7 +43,7 @@ Limitations
 
 Mocktrofit utilizes the names of mock files to determine the path and parameters of the request.  
 Due to limitations in the Android Asset system, we need a compile time processor to hash the names such that the name is always a consistent length.
-Because of there are still some unimplemented features that [VOKMockUrlProtocol](https://github.com/vokal/VOKMockUrlProtocol) has.
+Because of this, there are still some unimplemented features that [VOKMockUrlProtocol](https://github.com/vokal/VOKMockUrlProtocol) has.
 
 Implemented
 
