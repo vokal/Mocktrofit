@@ -112,7 +112,7 @@ public class MockClient implements Client {
             path = path + "?" + alphabetizeEncodeQuery(parts[1]);
         }
 
-        String url = String.format("%s|%s", request.getMethod(), path);
+        String url = String.format("%s#%s", request.getMethod(), path);
         String body = null;
 
         if (request.getBody() != null && request.getBody().length() > 0) { 
@@ -137,7 +137,7 @@ public class MockClient implements Client {
         }
 
         if (body != null) {
-            url = String.format("%s|%s", url, body);
+            url = String.format("%s#%s", url, body);
         }
 
         return url;
