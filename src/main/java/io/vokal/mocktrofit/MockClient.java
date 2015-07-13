@@ -145,7 +145,7 @@ public class MockClient implements Client {
 
     private String findFile(String filename) throws IOException {
         String[] list = mContext.getAssets().list(mMockDir);
-        String regex = String.format("%s\\.\\w+", filename).replaceAll("\\|", "\\\\|");
+        String regex = String.format("%s\\.\\w+", filename).replaceAll("\\#", "\\\\#");
         for (String path : list) {
             if (path.matches(regex)) {
                 return path;
