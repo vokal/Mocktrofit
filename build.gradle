@@ -1,51 +1,48 @@
+configurations {
+    deployerJars
+}
+
 buildscript {
-    repositories { 
+    repositories {
         jcenter()
-        maven {
-            url 'http://vokal-repo.ngrok.com/artifactory/repo'
-            credentials {
-                username = "${artifactory_user}"
-                password = "${artifactory_password}"
-            }
-        }
+        mavenCentral()
     }
     dependencies {
+
         classpath 'com.android.tools.build:gradle:1.0.0'
         classpath 'com.wmbest.gradle:rats:0.2.1'
-        classpath 'io.vokal.gradle:mocktrofit-processor:0.1.0'
+        classpath files('libs/mocktrofit-processor:0.1.2.jar')
+
     }
 }
 
-plugins {
-    id 'com.jfrog.artifactory' version '3.0.1' 
-}
 
 apply plugin: 'com.android.library'
 apply plugin: 'rats'
-apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
-apply plugin: 'io.vokal.mocktrofit'
+apply plugin: 'maven'
 
 group = 'io.vokal'
-version = '0.2.2'
+version = '0.2.2.1'
 
 repositories {
     jcenter()
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:21.0.2'
     compile 'com.squareup.retrofit:retrofit:1.8.0'
 }
 
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 21 
+        targetSdkVersion 21
 
         versionName "0.1"
         versionCode 1
@@ -67,49 +64,29 @@ android {
 
 rats {
     server "https://vokalrats.ngrok.com"
-    user ratsUser
-    password ratsPass
-    count 3
+    user project.hasProperty('ratsUser') ? ratsUser : ''
+    password project.hasProperty('ratsPass') ? ratsPass : ''
     message "git log --oneline HEAD^..HEAD".execute().text
+    count 5
 }
 
 artifacts {
     archives file("build/outputs/aar/Mocktrofit-release.aar")
 }
 
-artifactory {
-    contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
-    publish {
-        repository {
-            repoKey = 'libs-release-local'
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
-            maven = true
-        }
-        defaults {
-            //This closure defines defaults for all 'artifactoryPublish' tasks of all projects the plugin is applied to
-            publications("mavenAndroid")
-            publishBuildInfo = true   //Publish build-info to Artifactory (true by default)
-            publishArtifacts = true   //Publish artifacts to Artifactory (true by default)
-        }
-    }
-}
-
-publishing {
-    publications {
-        mavenAndroid(MavenPublication) {
-            groupId group
-            artifactId 'mocktrofit'
-            version version
-            artifact "build/outputs/aar/Mocktrofit-release.aar"
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.compile.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            if (project.hasProperty('nexusUsername') && project.hasProperty('nexusPassword')) {
+                configuration = configurations.deployerJars
+                snapshotRepository(url: "http://nexus.skillz.com/content/repositories/snapshots") {
+                    authentication(userName: nexusUsername, password: nexusPassword)
                 }
+                repository(url: "http://nexus.skillz.com/content/repositories/releases") {
+                    authentication(userName: nexusUsername, password: nexusPassword)
+                }
+            } else {
+                println 'Undefined nexusUsername or nexusPassword. Please add them to your gradle home gradle.properties.'
             }
         }
     }
