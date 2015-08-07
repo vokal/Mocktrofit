@@ -143,8 +143,13 @@ public class MockClient implements Client {
         return url;
     }
 
-    private String findFile(String filename) throws IOException {
-        String[] list = mContext.getAssets().list(mMockDir);
+    private String findFile(String filename) {
+        String[] list;
+        try {
+            list = mContext.getAssets().list(mMockDir);
+        } catch (IOException e) {
+            list = new String[0];
+        }
         String regex = String.format("%s\\.\\w+", filename).replaceAll("\\|", "\\\\|");
         for (String path : list) {
             if (path.matches(regex)) {
@@ -198,17 +203,53 @@ public class MockClient implements Client {
             new TypedByteArray(contentType, buffer.toString().getBytes()));
     }
 
-    @Override
-    public Response execute(Request request) throws IOException {
-
-        String filename = getFileName(request);
-        String key = encrypt(filename);
+    private String getFullPath(String filename) {
         String fullPath;
+        String key = encrypt(filename);
+
         if (mRouteMap.containsKey(key)) {
             fullPath = mRouteMap.get(key);
         } else {
             fullPath = findFile(key);
-            if (fullPath != null) mRouteMap.put(key, fullPath);
+        }
+        return fullPath;
+    }
+
+    private String encryptBody(String filename) {
+        String[] parts = filename.split("\\|");
+        if (parts.length == 3) {
+            parts[2] = encrypt(parts[2]);
+            return String.format("%s|%s|%s", parts[0], parts[1], parts[2]);
+        }
+        return filename;
+    }
+
+    private String encryptPathAndBody(String filename) {
+        String[] parts = filename.split("\\|");
+        parts[1] = encrypt(parts[1]);
+        if (parts.length == 3) {
+            parts[2] = encrypt(parts[2]);
+            return String.format("%s|%s|%s", parts[0], parts[1], parts[2]);
+        }
+        return String.format("%s|%s", parts[0], parts[1]);
+    }
+
+    @Override
+    public Response execute(Request request) throws IOException {
+        String filename = getFileName(request);
+
+        String fullPath = getFullPath(filename);
+
+        if (fullPath == null) {
+            fullPath = getFullPath(encryptBody(filename));
+        }
+        
+        if (fullPath == null) {
+            fullPath = getFullPath(encryptPathAndBody(filename));
+        }
+        
+        if (fullPath == null) {
+            fullPath = getFullPath(encrypt(filename));
         }
 
         Response output = new Response(filename, 404, "Not Found", Collections.EMPTY_LIST, null);       
@@ -216,7 +257,9 @@ public class MockClient implements Client {
             output = serve(fullPath);
         } else {
             Log.d("Mocktrofit", "Missing File: " + filename);
-            Log.d("Mocktrofit", "    Key: " + key);
+            Log.d("Mocktrofit", "    File: " + encryptBody(filename));
+            Log.d("Mocktrofit", "    File: " + encryptPathAndBody(filename));
+            Log.d("Mocktrofit", "    Key: " + encrypt(filename));
             Log.d("Mocktrofit", "    Are you sure you set up the mocktrofit gradle plugin?");
         }
         return output;

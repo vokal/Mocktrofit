@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.wmbest.gradle:rats:0.2.1'
         classpath 'io.vokal.gradle:mocktrofit-processor:0.1.0'
     }
@@ -27,25 +27,25 @@ apply plugin: 'maven-publish'
 apply plugin: 'io.vokal.mocktrofit'
 
 group = 'io.vokal'
-version = '0.2.2'
+version = '0.2.3'
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:21.0.2'
-    compile 'com.squareup.retrofit:retrofit:1.8.0'
+    compile 'com.android.support:support-v4:22.2.1'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
 }
 
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 21 
+        targetSdkVersion 22 
 
         versionName "0.1"
         versionCode 1
