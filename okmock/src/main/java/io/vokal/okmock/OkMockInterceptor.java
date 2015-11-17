@@ -67,11 +67,6 @@ public class OkMockInterceptor implements Interceptor {
         if (fullPath != null) {
             output = serve(chain.request(), fullPath);
         } else {
-            Log.d("Mocktrofit", "Missing File: " + filename);
-            Log.d("Mocktrofit", "    File: " + MockServer.encryptBody(filename));
-            Log.d("Mocktrofit", "    File: " + MockServer.encryptPathAndBody(filename));
-            Log.d("Mocktrofit", "    Key: " +  MockServer.encrypt(filename));
-            Log.d("Mocktrofit", "    Are you sure you set up the mocktrofit gradle plugin?");
             output = chain.proceed(chain.request());
         }
         return output;

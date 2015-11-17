@@ -64,12 +64,6 @@ public class MockClient implements Client {
         Response output = new Response(filename, 404, "Not Found", Collections.EMPTY_LIST, null);       
         if (fullPath != null) {
             output = serve(fullPath);
-        } else {
-            Log.d("Mocktrofit", "Missing File: " + filename);
-            Log.d("Mocktrofit", "    File: " + MockServer.encryptBody(filename));
-            Log.d("Mocktrofit", "    File: " + MockServer.encryptPathAndBody(filename));
-            Log.d("Mocktrofit", "    Key: " +  MockServer.encrypt(filename));
-            Log.d("Mocktrofit", "    Are you sure you set up the mocktrofit gradle plugin?");
         }
         return output;
     }

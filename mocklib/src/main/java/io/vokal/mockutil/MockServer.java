@@ -95,6 +95,15 @@ public final class MockServer {
         if (fullPath == null) {
             fullPath = getFullPath(encrypt(filename));
         }
+
+        if (fullPath == null) {
+            Log.d("Mocktrofit", "Missing File: " + filename);
+            Log.d("Mocktrofit", "    File: " + encryptBody(filename));
+            Log.d("Mocktrofit", "    File: " + encryptPathAndBody(filename));
+            Log.d("Mocktrofit", "    Key: " +  encrypt(filename));
+            Log.d("Mocktrofit", "    Are you sure you set up the mocktrofit gradle plugin?");
+        }
+
         return fullPath;
     }
 
