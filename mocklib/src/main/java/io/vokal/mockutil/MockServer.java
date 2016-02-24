@@ -117,14 +117,14 @@ public final class MockServer {
         String def = reader.readLine();
         String line = reader.readLine();
 
-        while(!line.trim().isEmpty()) {
+        while(line != null && !line.trim().isEmpty()) {
             String[] header = line.split(":", 2);
             file.headers.add(line);
             if (header[0].toLowerCase(Locale.getDefault()).equals("content-type")) {
                 file.contentType = header[1].trim();
             }
 
-            line=reader.readLine();
+            line = reader.readLine();
         }
 
         // Read the rest of the file
