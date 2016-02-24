@@ -3,6 +3,7 @@ package io.vokal.mocktrofit;
 import android.test.AndroidTestCase;
 
 import retrofit.*;
+import retrofit.client.Response;
 import retrofit.http.*;
 
 import io.vokal.mockutil.*;
@@ -41,6 +42,9 @@ public class TestMockClient extends AndroidTestCase {
     public interface UserService {
         @POST("/v1/user/login")
         User login(@Body UserCreds creds);
+
+        @DELETE("/v1/test/delete")
+        Response delete();
     }
 
     private DogService mDogService;
@@ -75,6 +79,12 @@ public class TestMockClient extends AndroidTestCase {
         creds.password = "P4rkMe";
         User myuser = mUserService.login(creds);
         assertEquals(30, myuser.id);
+    }
 
+    public void testDelete() {
+        Response response = mUserService.delete();
+        assertEquals(204, response.getStatus());
+        assertEquals("DELETED", response.getReason());
+        assertEquals(0, response.getBody().length());
     }
 }
