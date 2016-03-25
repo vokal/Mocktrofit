@@ -1,23 +1,33 @@
 package io.vokal.okmock;
 
 import android.content.Context;
-import android.util.Log;
 
-import java.io.*;
+import java.io.IOException;
 
+import io.vokal.mockutil.MockFile;
+import io.vokal.mockutil.MockServer;
+import okhttp3.*;
 import okio.Buffer;
-import com.squareup.okhttp.*;
-
-import io.vokal.mockutil.*;
 
 public class OkMockInterceptor implements Interceptor {
 
     public MockServer server;
 
+    /**
+     * Construct a mock interceptor using the root of the assets folder for mock files.
+     *
+     * @param ctx
+     */
     public OkMockInterceptor(Context ctx) {
         this(ctx, "");
     }
 
+    /**
+     * Construct a mock interceptor using the specified asset folder path for mock files.
+     *
+     * @param ctx - any valid context
+     * @param dir - folder path of mock asset files
+     */
     public OkMockInterceptor(Context ctx, String dir) {
         server = new MockServer(ctx, dir);
     }
@@ -39,7 +49,7 @@ public class OkMockInterceptor implements Interceptor {
             }
         }
 
-        return server.getFileName(request.urlString(), request.method(), body, contentType);
+        return server.getFileName(request.url().toString(), request.method(), body, contentType);
     }
 
     private Response serve(Request request, String filename) throws IOException {

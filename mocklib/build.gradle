@@ -1,30 +1,18 @@
-buildscript {
-    repositories { 
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
-    }
-}
-
 apply plugin: 'com.android.library'
+apply plugin: "com.jfrog.artifactory"
+apply plugin: 'maven-publish'
 
-group = 'io.vokal'
-version = '1.0'
-
-repositories {
-    jcenter()
-}
+group = 'io.vokal.mock'
+version = '1.0.0'
 
 dependencies {
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.android.support:support-v4:23.1.0'
+    compile 'com.android.support:support-v4:23.2.0'
 }
-
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.1'
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         minSdkVersion 15
@@ -39,3 +27,47 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
+
+
+artifacts {
+    archives file("build/outputs/aar/mocklib-release.aar")
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'libs-release-local'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+        defaults {
+            //This closure defines defaults for all 'artifactoryPublish' tasks of all projects the plugin is applied to
+            publications("mocktrofit")
+            publishBuildInfo = true   //Publish build-info to Artifactory (true by default)
+            publishArtifacts = true   //Publish artifacts to Artifactory (true by default)
+        }
+    }
+}
+
+publishing {
+    publications {
+        mocktrofit(MavenPublication) {
+            groupId group
+            version version
+            artifact "build/outputs/aar/mocklib-release.aar"
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.compile.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+            }
+        }
+    }
+}
+
+

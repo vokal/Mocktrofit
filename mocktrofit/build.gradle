@@ -1,33 +1,11 @@
-buildscript {
-    repositories { 
-        jcenter()
-        maven {
-            url 'https://artifactory.vokal.io/artifactory/plugins-release'
-            credentials {
-                username = "${artifactory_user}"
-                password = "${artifactory_password}"
-            }
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
-        classpath 'com.wmbest.gradle:rats:0.2.1'
-        classpath 'io.vokal.gradle:mocktrofit-processor:0.1.0'
-    }
-}
-
-plugins {
-    id 'com.jfrog.artifactory' version '3.1.0' 
-}
-
 apply plugin: 'com.android.library'
-apply plugin: 'rats'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven-publish'
 apply plugin: 'io.vokal.mocktrofit'
+apply plugin: 'rats'
 
-group = 'io.vokal'
-version = '1.0'
+group = 'io.vokal.mock'
+version = '1.0.0'
 
 repositories {
     jcenter()
@@ -38,10 +16,9 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.9.0'
 }
 
-
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.1'
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         minSdkVersion 15
@@ -74,7 +51,7 @@ rats {
 }
 
 artifacts {
-    archives file("build/outputs/aar/Mocktrofit-release.aar")
+    archives file("build/outputs/aar/mocktrofit-release.aar")
 }
 
 artifactory {
@@ -101,7 +78,7 @@ publishing {
             groupId group
             artifactId 'mocktrofit'
             version version
-            artifact "build/outputs/aar/Mocktrofit-release.aar"
+            artifact "build/outputs/aar/mocktrofit-release.aar"
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
                 configurations.compile.allDependencies.each {
