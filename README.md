@@ -28,11 +28,11 @@ compile 'io.vokal.mock:mocktrofit2:1.0.0'
 Use the Client
 
 ```java
-    OkHttpClient mockClient = OkHttpClient.Builder()
+  OkHttpClient mockClient = OkHttpClient.Builder()
             .addInterceptor(new OkMockInterceptor(ctx, "mocks"))
             .build();
                         
-    Retrofit retrofit = new Retrofit.Builder()
+  Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(MockServer.BASE_URL)
             .setClient(mockClient)
             .build();
@@ -48,9 +48,10 @@ compile 'io.vokal.mock:mocktrofit:1.0.0'
 Use the Client
 
 ```java
-      RestAdapter restAdapter = new RestAdapter.Builder()
+  RestAdapter restAdapter = new RestAdapter.Builder()
             .setEndpoint(MockClient.BASE_URL)
             .setClient(new MockClient(getContext(), "mocks"))
+            .build();
 
 ```
 
