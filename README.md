@@ -3,8 +3,8 @@ Mocktrofit
 
 Mocking Client for Retrofit
 
-Usage
------
+Common Usage
+------------
 
 Include the mocktrofit build time plugin
 
@@ -18,19 +18,40 @@ Apply the plugin
 apply plugin: 'io.vokal.mocktrofit'
 ```
 
+Retrofit 2 Usage
+----------------
 Include Mocktrofit
-
 ```
-compile 'io.vokal:mocktrofit:0.2.1'
+compile 'io.vokal.mock:mocktrofit2:1.0.0'
 ```
 
 Use the Client
 
 ```java
-  RestAdapter restAdapter = new RestAdapter.Builder()
+    OkHttpClient mockClient = OkHttpClient.Builder()
+            .addInterceptor(new OkMockInterceptor(ctx, "mocks"))
+            .build();
+                        
+    Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(MockServer.BASE_URL)
+            .setClient(mockClient)
+            .build();
+```
+
+Retrofit 1 Usage
+----------------
+Include Mocktrofit
+```
+compile 'io.vokal.mock:mocktrofit:1.0.0'
+```
+
+Use the Client
+
+```java
+      RestAdapter restAdapter = new RestAdapter.Builder()
             .setEndpoint(MockClient.BASE_URL)
             .setClient(new MockClient(getContext(), "mocks"))
-            .build();
+
 ```
 
 Notes
@@ -41,14 +62,12 @@ If you are unsure what to name your mocks, check the logs.  It will include both
 Limitations
 -----
 
-Mocktrofit utilizes the names of mock files to determine the path and parameters of the request.  
-Due to limitations in the Android Asset system, we need a compile time processor to hash the names such that the name is always a consistent length.
-Because of this, there are still some unimplemented features that [VOKMockUrlProtocol](https://github.com/vokal/VOKMockUrlProtocol) has.
+Mocktrofit utilizes the names of mock files to determine the path and parameters of the request. Due to limitations in the Android Asset system, we need a compile time processor to hash the names such that the name is always a consistent length. Because of this, there are still some unimplemented features that [VOKMockUrlProtocol](https://github.com/vokal/VOKMockUrlProtocol) has.
 
 Implemented
 
  * Basic Mocks ending with .http
- * Mocks in both App and Test applicatons will work properly
+ * Mocks in both App and Test applications will work properly
  * Double hashing for long names (Most operating systems have a 255 character limit)
 
 Unimplemented
