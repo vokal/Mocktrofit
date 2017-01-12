@@ -6,10 +6,10 @@ Mocking Client for Retrofit
 Common Usage
 ------------
 
-Include the mocktrofit build time plugin
+Include the [mocktrofit](https://github.com/vokal/Mocktrofit-Processor) gradle plugin in buildscript
 
 ```
-classpath 'io.vokal.gradle:mocktrofit-processor:0.1.0'
+classpath 'io.vokal.gradle:mocktrofit-processor:0.1.2'
 ```
 
 Apply the plugin
@@ -31,7 +31,7 @@ Use the Client
   OkHttpClient mockClient = OkHttpClient.Builder()
             .addInterceptor(new OkMockInterceptor(ctx, "mocks"))
             .build();
-                        
+
   Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(MockServer.BASE_URL)
             .setClient(mockClient)

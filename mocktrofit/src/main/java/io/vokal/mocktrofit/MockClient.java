@@ -1,18 +1,17 @@
 package io.vokal.mocktrofit;
 
 import android.content.Context;
-import android.util.Log;
 
-import java.io.*;
-import java.net.URLEncoder;
-import java.math.BigInteger;
-import java.util.*;
-import java.security.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import retrofit.client.*;
 import retrofit.mime.TypedByteArray;
 
-import io.vokal.mockutil.*;
+import io.vokal.mockutil.MockFile;
+import io.vokal.mockutil.MockServer;
 
 public class MockClient implements Client {
 

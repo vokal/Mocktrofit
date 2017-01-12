@@ -1,1 +1,1 @@
-include ':mocktrofit', ':okmock', ':mocklib'
+include ':mocklib', ':mocktrofit', ':okmock'

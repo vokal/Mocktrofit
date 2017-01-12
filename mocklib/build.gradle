@@ -7,16 +7,16 @@ version = '1.0.0'
 
 dependencies {
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.android.support:support-v4:23.2.0'
+    compile 'com.android.support:support-v4:25.1.0'
 }
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 23 
+        targetSdkVersion 23
 
         versionName "1.0"
         versionCode 1
@@ -28,9 +28,37 @@ android {
     }
 }
 
-
 artifacts {
     archives file("build/outputs/aar/mocklib-release.aar")
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java']
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadoc(type: Javadoc) {
+    source = project.android.sourceSets.main.java.srcDirs
+    options.linkSource true
+    classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+afterEvaluate {
+    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    })
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 artifactory {
@@ -44,7 +72,7 @@ artifactory {
         }
         defaults {
             //This closure defines defaults for all 'artifactoryPublish' tasks of all projects the plugin is applied to
-            publications("mocktrofit")
+            publications("mocklib")
             publishBuildInfo = true   //Publish build-info to Artifactory (true by default)
             publishArtifacts = true   //Publish artifacts to Artifactory (true by default)
         }
@@ -53,10 +81,13 @@ artifactory {
 
 publishing {
     publications {
-        mocktrofit(MavenPublication) {
+        mocklib(MavenPublication) {
             groupId group
+            artifactId 'mocklib'
             version version
             artifact "build/outputs/aar/mocklib-release.aar"
+            artifact sourcesJar
+            artifact javadocJar
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
                 configurations.compile.allDependencies.each {
@@ -70,4 +101,5 @@ publishing {
     }
 }
 
-
+artifactoryPublish.dependsOn('assemble', 'javadocJar', 'sourcesJar', 'generatePomFileForMocklibPublication')
+publish.dependsOn(artifactoryPublish)
