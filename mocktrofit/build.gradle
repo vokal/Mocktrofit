@@ -18,11 +18,11 @@ dependencies {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 23 
+        targetSdkVersion 23
 
         versionName "1.0"
         versionCode 1
@@ -54,6 +54,38 @@ artifacts {
     archives file("build/outputs/aar/mocktrofit-release.aar")
 }
 
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java']
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadoc(type: Javadoc) {
+    source = project.android.sourceSets.main.java.srcDirs
+    options.linkSource true
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//    def mocklib = rootProject.childProjects.get("mocklib")
+//    source(source, mocklib.android.sourceSets.main.java.srcDirs)
+//    classpath += mocklib.files(mocklib.android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+afterEvaluate {
+    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    })
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 artifactory {
     contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
     publish {
@@ -79,6 +111,8 @@ publishing {
             artifactId 'mocktrofit'
             version version
             artifact "build/outputs/aar/mocktrofit-release.aar"
+            artifact sourcesJar
+            artifact javadocJar
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
                 configurations.compile.allDependencies.each {
@@ -91,3 +125,6 @@ publishing {
         }
     }
 }
+
+artifactoryPublish.dependsOn('assemble', 'javadocJar', 'sourcesJar', 'generatePomFileForMocktrofitPublication')
+publish.dependsOn(artifactoryPublish)

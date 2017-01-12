@@ -414,7 +414,7 @@ public class BencodingInputStream extends PushbackInputStream implements DataInp
   /**
    * Reads and returns a {@link String}.
    * 
-   * @see #readString().
+   * // @see #readString()
    */
   @Override
   public String readLine() throws IOException {

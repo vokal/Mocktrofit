@@ -32,17 +32,17 @@ public class BencodingUtils {
   public static final int LENGTH_DELIMITER = ':';
   
   /**
-   * d<key><value>e
+   *  d&lt;key&gt;&lt;value&gt;e
    */
   public static final int DICTIONARY = 'd';
   
   /**
-   * l<value>e
+   *  l&lt;value&gt;e
    */
   public static final int LIST = 'l';
   
   /**
-   * i<number>e
+   *  i&lt;number&gt;e
    */
   public static final int NUMBER = 'i';
   
